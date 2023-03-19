@@ -1,33 +1,16 @@
 import random
-import json
 import telebot
-from Config import token
+from cfg import TOKEN
+from Database import read_help_from_file, read_saves_from_file, read_tasks_from_file, write_saves_to_file, write_tasks_to_file
+
 
 # мы создаем переменную bot, в которой будут содержаться те функции, которые нам нужны для обработки и ответа на
 # сообщение
-bot = telebot.TeleBot(token)
+bot = telebot.TeleBot(TOKEN)
 
-HELP = """
-/add - добавить в список;
-/end - закончить выполнение программы;
-/help - вывести список доступных команд;
-/list - выводит список в тэге;
-/show - показать список;
-/save - добавить новый хэштег и/или добавить новую запись в существующий хэштег.
-"""
-
-with open("Help.json", "w") as f:
-    json.dump(HELP, f, indent=4)
-
-with open("Help.json") as f:
-    HELP = json.load(f)
-
-with open("Tasks.json") as f:
-    tasks = json.load(f)
-
-with open("Saves.json") as f:
-    saves = json.load(f)
-
+HELP = read_help_from_file()
+saves = read_saves_from_file()
+tasks = read_tasks_from_file()
 
 # random_tasks = ["sport", "grocery", "playing piano", "study"]
 
@@ -40,22 +23,12 @@ def add_todo(date, task):
         tasks[date].append(task)
 
 
-def write_tasks_to_file():
-    with open("Tasks.json", "w") as f:
-        json.dump(tasks, f, indent=4)
-
-
 def save_me(key, note):
     if key in saves:
         saves[key].append(note)
     else:
         saves[key] = []
         saves[key].append(note)
-
-
-def write_saves_to_file():
-    with open("Saves.json", "w") as f:
-        json.dump(saves, f, indent=4)
 
 
 @bot.message_handler(commands=["help"])
@@ -69,6 +42,7 @@ def add(message):
     date = command[1].lower()
     task = command[2]
     add_todo(date, task)
+    write_tasks_to_file(tasks)
     text = "Задача " + task + " на " + date + " добавлена!"
     bot.send_message(message.chat.id, text)
 
@@ -80,7 +54,7 @@ def save(message):
     note = command[2]
     save_me(key, note)
     text = "Запись " + note + " добавлена в хэштег " + key
-    write_saves_to_file()
+    write_saves_to_file(saves)
     bot.send_message(message.chat.id, text)
 
 

@@ -1,7 +1,6 @@
 .idea
-new.py
 
 Config.py
 Saves.json
-Core functions.py
-String dividing.py
+Tasks.json
+__pycache__
